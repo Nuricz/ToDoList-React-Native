@@ -11,10 +11,15 @@ export default function App() {
   const [todos, setTodos] = useState([]);
   const [actual, setActual] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [id_count, setIdCount] = useState(0);
 
   useEffect(() => {
     getData();
   }, []);
+
+  function incId(){
+    setIdCount(id_count+1);
+  }
 
   async function getData() {
     try {
@@ -22,7 +27,6 @@ export default function App() {
         'https://jsonplaceholder.typicode.com/todos?_limit=10'
       );
       setTodos(response.data);
-      setLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -42,7 +46,10 @@ export default function App() {
           todo
         );
         setTodos((prev) => {
-          return [response.data, ...prev];
+          const new_todo = response.data;
+          new_todo.id = new_todo.id + id_count;
+          incId();
+          return [new_todo, ...prev];
         });
 
       } catch (error) {
@@ -71,7 +78,6 @@ export default function App() {
 
   async function editTodo(todo) {
     try {
-      setLoading(true);
 
       const response = await axios.patch(
         `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
@@ -88,7 +94,6 @@ export default function App() {
         });
       });
 
-      setLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -100,14 +105,11 @@ export default function App() {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={() => {
-      Keyboard.dismiss();
-    }}>
       <View style={styles.container}>
         <Header />
         <View style={styles.content}>
           <ModalTodo modalVisible={modalVisible} setModalVisible={setModalVisible} />
-          <Button title="Agregar tarea" onPress={() => setModalVisible(true)}/>
+          <Button title="Agregar tarea" onPress={() => setModalVisible(true)} />
           <AddTodo handleSubmit={handleSubmit} actual={actual} />
           <View style={styles.list}>
             <FlatList
@@ -115,11 +117,11 @@ export default function App() {
               renderItem={({ item }) => (
                 <TodoItem item={item} handleDelete={handleDelete}></TodoItem>
               )}
+              keyExtractor={(item) => item.id.toString()}
             />
           </View>
         </View>
       </View>
-    </TouchableWithoutFeedback>
   );
 };
 
