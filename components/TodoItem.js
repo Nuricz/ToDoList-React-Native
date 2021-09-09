@@ -1,10 +1,10 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, Button } from 'react-native';
 
-export default function TodoItem({ item, handleDelete }) {
+export default function TodoItem({ item, handleDelete, openViewTodo }) {
   return (
-    <TouchableOpacity style={styles.item}>
-      <Text  >{item.title}</Text>
+    <TouchableOpacity style={styles.item} onPress={() => openViewTodo(item)}>
+      <Text>{item.title}</Text>
       <Button title='Borrar' onPress={() => handleDelete(item.id)} color="red"></Button>
     </TouchableOpacity>
   )

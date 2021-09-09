@@ -1,24 +1,46 @@
 import { Alert, Button, FlatList, Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 
 import axios from 'axios';
 import Header from "./components/Header";
 import TodoItem from './components/TodoItem';
 import AddTodo from './components/AddTodo';
-import ModalTodo from './components/Modal';
+import ViewTodo from './components/ViewTodo';
+
+const theme = {
+  ...DefaultTheme,
+  roundness: 2,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#3498db',
+    accent: '#f1c40f',
+  },
+};
 
 export default function App() {
   const [todos, setTodos] = useState([]);
   const [actual, setActual] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [id_count, setIdCount] = useState(0);
+  const [openTodo, setOpenTodo] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState(null);
 
   useEffect(() => {
     getData();
   }, []);
 
-  function incId(){
-    setIdCount(id_count+1);
+  function incId() {
+    setIdCount(id_count + 1);
+  }
+
+  function getTodoByID(todo_id){
+    return todos.find((todo) => todo.id = todo_id);
+  }
+
+  function openViewTodo(todo_id){
+    setSelectedTodo(todo_id);
+    setOpenTodo(true);
   }
 
   async function getData() {
@@ -59,6 +81,7 @@ export default function App() {
       Alert.alert("Oops", "Debe agregar un titulo", [
         { text: 'Entendido', onPress: () => console.log('alert closed') }
       ])
+      return(null);
     }
   }
 
@@ -105,23 +128,25 @@ export default function App() {
   }
 
   return (
+    <PaperProvider theme={theme}>
       <View style={styles.container}>
         <Header />
         <View style={styles.content}>
-          <ModalTodo modalVisible={modalVisible} setModalVisible={setModalVisible} />
           <Button title="Agregar tarea" onPress={() => setModalVisible(true)} />
-          <AddTodo handleSubmit={handleSubmit} actual={actual} />
+          <AddTodo handleSubmit={handleSubmit} actual={actual} modalVisible={modalVisible} setModalVisible={setModalVisible} />
+          <ViewTodo openTodo={openTodo} setOpenTodo={setOpenTodo} todo={selectedTodo} getTodoByID={getTodoByID} />          
           <View style={styles.list}>
             <FlatList
               data={todos}
               renderItem={({ item }) => (
-                <TodoItem item={item} handleDelete={handleDelete}></TodoItem>
+                <TodoItem item={item} handleDelete={handleDelete} openViewTodo={openViewTodo}></TodoItem>
               )}
               keyExtractor={(item) => item.id.toString()}
             />
           </View>
         </View>
       </View>
+    </PaperProvider>
   );
 };
 
