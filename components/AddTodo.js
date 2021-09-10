@@ -1,10 +1,17 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, Button, View, Switch, Modal, Alert } from 'react-native';
 
-export default function AddTodo({ handleSubmit, actual, modalVisible, setModalVisible }) {
+export default function AddTodo({
+  handleSubmit,
+  actual,
+  modalVisible,
+  setModalVisible,
+  editTodo,
+  setActual
+}) {
 
   const [title, setTitle] = useState(actual ? actual.title : '');
-  const [completed, setCompleted] = useState(actual ? actual.completed : false);
+  const [completed, setCompleted] = useState(false);
 
   const toggleSwitch = () => setCompleted(previousState => !previousState);
 
@@ -14,16 +21,19 @@ export default function AddTodo({ handleSubmit, actual, modalVisible, setModalVi
       completed,
       id: actual ? actual.id : null,
     };
-    if (!actual) {
+    if (actual) {
+      editTodo(todo);
+    } else {
       handleSubmit(todo);
-      setModalVisible(!modalVisible);
-      cleanTodo();
     }
+    setModalVisible(!modalVisible);
+    cleanTodo();
   }
 
   function cleanTodo() {
     setTitle('');
     setCompleted(false);
+    setActual(null);
   }
 
   return (
@@ -50,14 +60,15 @@ export default function AddTodo({ handleSubmit, actual, modalVisible, setModalVi
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
+          <Text style={styles.title}>{actual ? 'Editar tarea' : 'Agregar tarea'}</Text>
           <View style={styles.formContainer}>
             <View style={styles.formInputs}>
-              <Text>Nombre</Text>
+              <Text>Nombre{console.log(actual ? actual.title : title)}</Text>
               <TextInput
                 style={styles.input}
-                placeholder='New todo.. '
+                placeholder='Titulo.. '
                 onChangeText={setTitle}
-                value={title}
+                defaultValue={actual ? actual.title : title}
               />
             </View>
             <View style={styles.formInputs}>
@@ -71,7 +82,8 @@ export default function AddTodo({ handleSubmit, actual, modalVisible, setModalVi
               />
             </View>
             <View style={styles.buttonsContainer}>
-              <Button onPress={() => onSubmit({ title: title, completed: completed, id: null })} title='Add todo' color='coral' />
+              <Button onPress={() => onSubmit({ title: title, completed: completed, id: null })}
+                title={actual ? 'Actualizar' : 'Guardar'} color='coral' />
               <Button onPress={() => { setModalVisible(!modalVisible); cleanTodo() }} title='cancelar' color='grey' />
             </View>
           </View>
@@ -88,6 +100,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+    width: '100%',
   },
   form: {
     flexDirection: 'row',
@@ -103,13 +116,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22
+    marginTop: 22,
   },
   modalView: {
-    margin: 5,
     backgroundColor: "white",
     borderRadius: 10,
-    padding: 5,
+    padding: 15,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -119,8 +131,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    width: 250,
-    height: 190,
+    width: 320,
+    height: 200,
   },
   button: {
     borderRadius: 20,
@@ -145,14 +157,19 @@ const styles = StyleSheet.create({
   formInputs: {
     justifyContent: "space-between",
     flexDirection: "row",
+    width: 220,
   },
   formContainer: {
-    width: 230,
-    height: 180,
-    justifyContent: "space-around"
+    width: '100%',
+    height: '100%',
+    justifyContent: "space-around",
+    padding: 10,
   },
   buttonsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
+  },
+  title: {
+    fontWeight: 'bold',
   },
 })

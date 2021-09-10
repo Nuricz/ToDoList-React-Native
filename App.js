@@ -1,4 +1,4 @@
-import { Alert, Button, FlatList, Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Text, FlatList, StyleSheet, View, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 
@@ -34,11 +34,11 @@ export default function App() {
     setIdCount(id_count + 1);
   }
 
-  function getTodoByID(todo_id){
+  function getTodoByID(todo_id) {
     return todos.find((todo) => todo.id = todo_id);
   }
 
-  function openViewTodo(todo_id){
+  function openViewTodo(todo_id) {
     setSelectedTodo(todo_id);
     setOpenTodo(true);
   }
@@ -81,7 +81,7 @@ export default function App() {
       Alert.alert("Oops", "Debe agregar un titulo", [
         { text: 'Entendido', onPress: () => console.log('alert closed') }
       ])
-      return(null);
+      return (null);
     }
   }
 
@@ -100,31 +100,38 @@ export default function App() {
   }
 
   async function editTodo(todo) {
-    try {
+    if (todo.title != '') {
+      try {
 
-      const response = await axios.patch(
-        `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
-        todo
-      );
+        const response = await axios.patch(
+          `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+          todo
+        );
 
-      setTodos((prev) => {
-        return prev.map((each) => {
-          if (each.id === todo.id) {
-            return {
-              ...response.data,
-            };
-          } else return each;
+        setTodos((prev) => {
+          return prev.map((each) => {
+            if (each.id === todo.id) {
+              return {
+                ...response.data,
+              };
+            } else return each;
+          });
         });
-      });
-
-    } catch (error) {
-      console.log(error);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      Alert.alert("Oops", "Debe agregar un titulo", [
+        { text: 'Entendido', onPress: () => console.log('alert closed') }
+      ])
+      return (null);
     }
+    setActual(null);
   }
 
   async function handleEdit(todo) {
     setActual(todo);
-    setModal(true);
+    setModalVisible(true);
   }
 
   return (
@@ -132,14 +139,16 @@ export default function App() {
       <View style={styles.container}>
         <Header />
         <View style={styles.content}>
-          <Button title="Agregar tarea" onPress={() => setModalVisible(true)} />
-          <AddTodo handleSubmit={handleSubmit} actual={actual} modalVisible={modalVisible} setModalVisible={setModalVisible} />
-          <ViewTodo openTodo={openTodo} setOpenTodo={setOpenTodo} todo={selectedTodo} getTodoByID={getTodoByID} />          
+          <TouchableOpacity style={styles.addTodoButton} title="Agregar tarea" onPress={() => setModalVisible(true)}>
+            <Text style={styles.textAddTodoButton}> Agregar tarea</Text>
+          </TouchableOpacity>
+          <AddTodo handleSubmit={handleSubmit} actual={actual} modalVisible={modalVisible} setModalVisible={setModalVisible} editTodo={editTodo} setActual={setActual} />
+          <ViewTodo openTodo={openTodo} setOpenTodo={setOpenTodo} todo={selectedTodo} getTodoByID={getTodoByID} />
           <View style={styles.list}>
             <FlatList
               data={todos}
               renderItem={({ item }) => (
-                <TodoItem item={item} handleDelete={handleDelete} openViewTodo={openViewTodo}></TodoItem>
+                <TodoItem item={item} handleDelete={handleDelete} openViewTodo={openViewTodo} handleEdit={handleEdit}></TodoItem>
               )}
               keyExtractor={(item) => item.id.toString()}
             />
@@ -160,5 +169,28 @@ const styles = StyleSheet.create({
   },
   list: {
     marginTop: 20,
-  }
+  },
+  addTodoButton: {
+    backgroundColor: 'coral',
+    width: '100%',
+    height: 50,
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  textAddTodoButton: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 })
